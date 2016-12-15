@@ -7,6 +7,8 @@ const app = express()
 const PORT = process.env.PORT || 3000;
 const bodyParser = require('body-parser');
 const request = require('request');
+const { load } = require('cheerio')
+
 
 
 app.use(function(req, res, next) {
@@ -15,16 +17,29 @@ app.use(function(req, res, next) {
   next();
 });
 
-//// Interaction with requested website ////
-const { load } = require('cheerio')
+//// Parse and return characteristics ////
+app.get('/dogbreed/*', (req, res) => {
+  let breedToDiscover = req.query.breed;
+  let reply = {}
 
+  request.get(`http://dogtime.com/dog-breeds/${breedToDiscover}`, function(err, _, body) {
+     let $ = load(body)
 
+     let characteristicsDomElements = $(".child-characteristic").find("span.characteristic").map(function(i, el) {
+        return $(this).html();
+      }).get();
 
+      let starDomElements = $(".child-characteristic").find("span.star").map(function(i, el) {
+         return $(this).html();
+       }).get();
 
+      for (var i = 0; i < characteristicsDomElements.length; i++) {
+        let propName = characteristicsDomElements[i].split(' ').join('');
+        reply[propName] = starDomElements[i]
+      }
 
-
-app.get('/dogbreed/', (req, res) => {
-
+      res.json(reply)
+  })
 })
 
 
