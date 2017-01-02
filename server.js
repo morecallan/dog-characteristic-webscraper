@@ -20,7 +20,8 @@ app.use(function(req, res, next) {
 //// Parse and return characteristics ////
 app.get('/dogbreed/*', (req, res) => {
   let breedToDiscover = req.query.breed;
-  let reply = {}
+  let reply = {};
+  reply.characteristics = [];
 
   request.get(`http://dogtime.com/dog-breeds/${breedToDiscover}`, function(err, _, body) {
      let $ = load(body)
@@ -35,7 +36,12 @@ app.get('/dogbreed/*', (req, res) => {
 
       for (var i = 0; i < characteristicsDomElements.length; i++) {
         let propName = characteristicsDomElements[i].split(' ').join('');
-        reply[propName] = starDomElements[i]
+        const singleReply = {
+          traitId: i,
+          trait: characteristicsDomElements[i],
+          value: starDomElements[i]
+        }
+        reply.characteristics.push(singleReply)
       }
 
       res.json(reply)
