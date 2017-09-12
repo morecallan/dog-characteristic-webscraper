@@ -17,6 +17,8 @@ app.use(function(req, res, next) {
   next();
 });
 
+app.use(bodyParser.json())
+
 //// Parse and return characteristics ////
 app.get('/dogbreed/*', (req, res) => {
   let breedToDiscover = req.query.breed;
