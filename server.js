@@ -23,10 +23,16 @@ app.get('/dogbreed/*', (req, res) => {
   let reply = {};
   reply.characteristics = [];
 
+  console.log(breedToDiscover)
+
   request.get(`http://dogtime.com/dog-breeds/${breedToDiscover}`, function(err, _, body) {
+    console.log(body)
      let $ = load(body)
 
+     console.log(typeof $(".child-characteristic").find("span.characteristic"))
+
      let characteristicsDomElements = $(".child-characteristic").find("span.characteristic").map(function(i, el) {
+       console.log($(this).html())
         return $(this).html();
       }).get();
 
@@ -42,6 +48,28 @@ app.get('/dogbreed/*', (req, res) => {
           value: starDomElements[i]
         }
         reply.characteristics.push(singleReply)
+      }
+
+      res.json(reply)
+  })
+})
+
+app.get('/characteristic/*', (req, res) => {
+  let traitToDiscover = req.query.characteristic;
+  let reply = {};
+  reply.breeds = [];
+
+
+  request.get(`http://dogtime.com/dog-breeds/characteristics/${traitToDiscover}`, function(err, _, body) {
+     let $ = load(body)
+
+     let breedsThatFitTheBill = $("li.column-list").find("span.post-title").map(function(i, el) {
+        return $(this).html();
+      }).get();
+
+
+      for (var i = 0; i < breedsThatFitTheBill.length; i++) {
+        reply.breeds.push(breedsThatFitTheBill[i])
       }
 
       res.json(reply)
