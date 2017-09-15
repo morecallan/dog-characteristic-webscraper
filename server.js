@@ -25,16 +25,12 @@ app.get('/dogbreed/*', (req, res) => {
   let reply = {};
   reply.characteristics = [];
 
-  console.log(breedToDiscover)
 
   request.get(`http://dogtime.com/dog-breeds/${breedToDiscover}`, function(err, _, body) {
-    console.log(body)
      let $ = load(body)
 
-     console.log(typeof $(".child-characteristic").find("span.characteristic"))
 
      let characteristicsDomElements = $(".child-characteristic").find("span.characteristic").map(function(i, el) {
-       console.log($(this).html())
         return $(this).html();
       }).get();
 
@@ -78,6 +74,27 @@ app.get('/characteristic/*', (req, res) => {
   })
 })
 
+app.get('/details/*', (req, res) => {
+  let breedToDiscover = req.query.dogBreed;
+  let reply = {};
+
+
+  request.get(`http://dogtime.com/dog-breeds/${breedToDiscover}`, function(err, _, body) {
+     let $ = load(body)
+
+
+     const name = $("header").find('h1').html()
+     const image = $("div.article-content").children().attr('src')
+     const description = $("header").find('h2').children()[0].children[0].data;
+
+     reply.name = name;
+     reply.image = image;
+     reply.description = description;
+
+
+      res.json(reply)
+  })
+})
 
 //// You know, like, listen on the port or something something darkside
 app.listen(PORT, () => console.log(`Listening on port: ${PORT}`))
