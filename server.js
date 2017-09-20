@@ -28,27 +28,29 @@ app.get('/dogbreed/*', (req, res) => {
 
   request.get(`http://dogtime.com/dog-breeds/${breedToDiscover}`, function(err, _, body) {
      let $ = load(body)
+     if ($(".error404-content").length) {
+       res.status(404).send("Oops, invalid request.");
+     } else {
+       let characteristicsDomElements = $(".child-characteristic").find("span.characteristic").map(function(i, el) {
+          return $(this).html();
+        }).get();
 
+        let starDomElements = $(".child-characteristic").find("span.star").map(function(i, el) {
+           return $(this).html();
+         }).get();
 
-     let characteristicsDomElements = $(".child-characteristic").find("span.characteristic").map(function(i, el) {
-        return $(this).html();
-      }).get();
-
-      let starDomElements = $(".child-characteristic").find("span.star").map(function(i, el) {
-         return $(this).html();
-       }).get();
-
-      for (var i = 0; i < characteristicsDomElements.length; i++) {
-        let propName = characteristicsDomElements[i].split(' ').join('');
-        const singleReply = {
-          traitId: i,
-          trait: characteristicsDomElements[i],
-          value: starDomElements[i]
+        for (var i = 0; i < characteristicsDomElements.length; i++) {
+          let propName = characteristicsDomElements[i].split(' ').join('');
+          const singleReply = {
+            traitId: i,
+            trait: characteristicsDomElements[i],
+            value: starDomElements[i]
+          }
+          reply.characteristics.push(singleReply)
         }
-        reply.characteristics.push(singleReply)
-      }
 
-      res.json(reply)
+        res.json(reply);
+     }
   })
 })
 
@@ -58,19 +60,23 @@ app.get('/characteristic/*', (req, res) => {
   reply.breeds = [];
 
 
-  request.get(`http://dogtime.com/dog-breeds/characteristics/${traitToDiscover}`, function(err, _, body) {
-     let $ = load(body)
+  request.get(`http://dogtime.com/dog-breeds/characteristics/${traitToDiscover}`, function(err, response, body) {
+      let $ = load(body)
 
-     let breedsThatFitTheBill = $("li.column-list").find("span.post-title").map(function(i, el) {
-        return $(this).html();
-      }).get();
+      if ($(".error404-content").length) {
+        res.status(404).send("Oops, invalid request.");
+      } else {
+        let breedsThatFitTheBill = $("li.column-list").find("span.post-title").map(function(i, el) {
+           return $(this).html();
+         }).get();
 
 
-      for (var i = 0; i < breedsThatFitTheBill.length; i++) {
-        reply.breeds.push(breedsThatFitTheBill[i])
+         for (var i = 0; i < breedsThatFitTheBill.length; i++) {
+           reply.breeds.push(breedsThatFitTheBill[i])
+         }
+
+         res.json(reply)
       }
-
-      res.json(reply)
   })
 })
 
@@ -82,19 +88,70 @@ app.get('/details/*', (req, res) => {
   request.get(`http://dogtime.com/dog-breeds/${breedToDiscover}`, function(err, _, body) {
      let $ = load(body)
 
+     if ($(".error404-content").length) {
+       res.status(404).send("Oops, invalid request.");
+     } else {
+       const name = $("header").find('h1').html()
+       const image = $("div.article-content").children().attr('src')
+       const description = $("header").find('h2').children()[0].children[0].data;
 
-     const name = $("header").find('h1').html()
-     const image = $("div.article-content").children().attr('src')
-     const description = $("header").find('h2').children()[0].children[0].data;
-
-     reply.name = name;
-     reply.image = image;
-     reply.description = description;
+       reply.name = name;
+       reply.image = image;
+       reply.description = description;
 
 
-      res.json(reply)
+        res.json(reply);
+     }   
   })
 })
+
+app.get('/allBreeds', (req, res) => {
+  let reply = {};
+  reply.breeds = [];
+
+
+  request.get(`http://dogtime.com/dog-breeds/characteristics/small`, function(err, _, body) {
+    let $ = load(body)
+
+    let breedsThatFitTheBill = $("li.column-list").find("span.post-title").map(function(i, el) {
+       return $(this).html();
+     }).get();
+
+
+     for (var i = 0; i < breedsThatFitTheBill.length; i++) {
+       reply.breeds.push(breedsThatFitTheBill[i])
+     }
+
+     request.get(`http://dogtime.com/dog-breeds/characteristics/size`, function(err, _, body) {
+       let $ = load(body)
+
+       let breedsThatFitTheBill = $("li.column-list").find("span.post-title").map(function(i, el) {
+          return $(this).html();
+        }).get();
+
+
+        for (var i = 0; i < breedsThatFitTheBill.length; i++) {
+          reply.breeds.push(breedsThatFitTheBill[i])
+        }
+
+        request.get(`http://dogtime.com/dog-breeds/characteristics/medium`, function(err, _, body) {
+          let $ = load(body)
+
+          let breedsThatFitTheBill = $("li.column-list").find("span.post-title").map(function(i, el) {
+             return $(this).html();
+           }).get();
+
+
+           for (var i = 0; i < breedsThatFitTheBill.length; i++) {
+             reply.breeds.push(breedsThatFitTheBill[i])
+           }
+
+           res.json(reply);
+        })
+     })
+  })
+})
+
 
 //// You know, like, listen on the port or something something darkside
 app.listen(PORT, () => console.log(`Listening on port: ${PORT}`))
