@@ -93,7 +93,15 @@ app.get('/details/*', (req, res) => {
      } else {
        const name = $("header").find('h1').html()
        const image = $("div.article-content").children().attr('src')
-       const description = $("header").find('h2').children()[0].children[0].data;
+       const descriptionFull = $($("header").find('h2').children()[0]).contents();
+       let description = '';
+       Object.keys(descriptionFull).forEach((attr) => {
+         if (descriptionFull[attr].type === 'text'){
+           description += descriptionFull[attr].data
+         } else if (descriptionFull[attr].name === 'a'){
+           description += descriptionFull[attr].children[0].data;
+         }
+       })
 
        reply.name = name;
        reply.image = image;
@@ -101,7 +109,7 @@ app.get('/details/*', (req, res) => {
 
 
         res.json(reply);
-     }   
+     }
   })
 })
 
